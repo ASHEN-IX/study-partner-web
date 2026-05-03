@@ -622,8 +622,8 @@ const Characters = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-transparent pt-24 px-6 text-foreground">
-        <div className="max-w-7xl mx-auto">
+      <div className="h-screen bg-transparent px-6 text-foreground overflow-hidden flex items-center">
+        <div className="max-w-7xl mx-auto w-full">
           <div className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl p-8 animate-pulse">
             <p className="text-lg font-bold tracking-wider">
               Loading character armory...
