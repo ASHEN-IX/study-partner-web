@@ -93,12 +93,16 @@ const StudySessionSetup = () => {
         const ownedData = result?.data || {};
         const ownedList = ownedData.owned_characters || [];
         const activeCharacterId =
-          ownedData.active_character_id?._id || ownedData.active_character_id || "";
+          ownedData.active_character_id?._id ||
+          ownedData.active_character_id ||
+          "";
 
         if (cancelled) return;
 
         setOwnedCharacters(ownedList);
-        setSelectedCharacterId(String(activeCharacterId || ownedList[0]?._id || ""));
+        setSelectedCharacterId(
+          String(activeCharacterId || ownedList[0]?._id || ""),
+        );
       } catch {
         if (!cancelled) {
           setCharacterError("Unable to load owned characters.");

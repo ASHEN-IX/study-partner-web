@@ -534,48 +534,180 @@ export default function WeeklyCalendar({
                         {dateStr}
                       </div>
 
-                      {slotIndexes.map((slotIndex) => {
-                        const isEvent = Boolean(
-                          findEventAt(weekIndex, dayIndex, slotIndex),
-                        );
-                        const isBlocked = Boolean(
-                          findBlockedAt(dayIndex, slotIndex),
-                        );
+                      {/* Clickable Background Grid */}
+                      <div
+                        className="day-grid-container"
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "2px",
+                          flex: 1,
+                        }}
+                      >
+                        {slotIndexes.map((slotIndex) => {
+                          return (
+                            <div
+                              key={`${weekIndex}-${dayIndex}-${slotIndex}`}
+                              className={`time-slot`}
+                              style={{
+                                ...getCellStyle(weekIndex, dayIndex, slotIndex),
+                                height: `${rowHeight}px`,
+                                backgroundColor: isCellSelectedByDrag(
+                                  weekIndex,
+                                  dayIndex,
+                                  slotIndex,
+                                )
+                                  ? "rgba(147, 51, 234, 0.15)"
+                                  : "transparent",
+                                borderColor: "transparent",
+                                borderBottom: "1px solid var(--border)",
+                              }}
+                              onMouseDown={() =>
+                                handleCellMouseDown(
+                                  weekIndex,
+                                  dayIndex,
+                                  slotIndex,
+                                )
+                              }
+                              onMouseEnter={() =>
+                                handleCellMouseEnter(
+                                  weekIndex,
+                                  dayIndex,
+                                  slotIndex,
+                                )
+                              }
+                              onMouseUp={handleCellMouseUp}
+                            />
+                          );
+                        })}
 
-                        return (
-                          <div
-                            key={`${weekIndex}-${dayIndex}-${slotIndex}`}
-                            className={`time-slot ${isBlocked ? "blocked" : ""} ${isEvent ? "event-slot" : ""}`}
-                            style={{
-                              ...getCellStyle(weekIndex, dayIndex, slotIndex),
-                              height: `${rowHeight}px`,
-                            }}
-                            onMouseDown={() =>
-                              handleCellMouseDown(
-                                weekIndex,
-                                dayIndex,
-                                slotIndex,
-                              )
-                            }
-                            onMouseEnter={() =>
-                              handleCellMouseEnter(
-                                weekIndex,
-                                dayIndex,
-                                slotIndex,
-                              )
-                            }
-                            onMouseUp={handleCellMouseUp}
-                            title={
-                              findEventAt(weekIndex, dayIndex, slotIndex)?.meta
-                                ?.title ||
-                              findBlockedAt(dayIndex, slotIndex)?.label ||
-                              undefined
-                            }
-                          >
-                            {getCellLabel(weekIndex, dayIndex, slotIndex)}
-                          </div>
-                        );
-                      })}
+                        {/* Absolute Event Overlays */}
+                        {eventSlots
+                          .filter(
+                            (s) =>
+                              s.week === weekIndex && s.dayIndex === dayIndex,
+                          )
+                          .map((slot) => (
+                            <div
+                              key={`event-${slot.id}`}
+                              className="absolute-event study-session-card"
+                              style={{
+                                position: "absolute",
+                                top: `${slot.startIndex * (rowHeight + 2)}px`,
+                                height: `${(slot.endIndex - slot.startIndex) * (rowHeight + 2) - 2}px`,
+                                left: "2px",
+                                right: "2px",
+                                backgroundColor:
+                                  slot.backgroundColor || "var(--primary)",
+                                borderRadius: "8px",
+                                color: "white",
+                                padding: "6px 8px",
+                                fontSize: "0.8rem",
+                                fontWeight: "600",
+                                overflow: "hidden",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                zIndex: 10,
+                                cursor: "pointer",
+                                display: "flex",
+                                flexDirection: "column",
+                                border: "1px solid rgba(255,255,255,0.2)",
+                              }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                setModalData({ type: "event", slot: slot });
+                                setShowModal(true);
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "block",
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {slot.label}
+                              </span>
+                              {slot.endIndex - slot.startIndex >= 4 && (
+                                <span
+                                  style={{
+                                    fontSize: "0.7rem",
+                                    opacity: 0.8,
+                                    marginTop: "auto",
+                                  }}
+                                >
+                                  {formatClock(
+                                    slotIndexToClock(slot.startIndex),
+                                  )}{" "}
+                                  -{" "}
+                                  {formatClock(slotIndexToClock(slot.endIndex))}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+
+                        {/* Absolute Blocked Overlays */}
+                        {selectedSlots
+                          .filter((s) => s.day === DAYS[dayIndex])
+                          .map((slot, i) => (
+                            <div
+                              key={`blocked-${slot.id || i}`}
+                              className="absolute-event blocked-session-card"
+                              style={{
+                                position: "absolute",
+                                top: `${slot.startIndex * (rowHeight + 2)}px`,
+                                height: `${(slot.endIndex - slot.startIndex) * (rowHeight + 2) - 2}px`,
+                                left: "2px",
+                                right: "2px",
+                                backgroundColor:
+                                  slot.backgroundColor ||
+                                  "rgba(100, 116, 139, 0.9)",
+                                borderRadius: "8px",
+                                color: "white",
+                                padding: "6px 8px",
+                                fontSize: "0.8rem",
+                                fontWeight: "500",
+                                overflow: "hidden",
+                                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.2)",
+                                zIndex: 5,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                border: "1px dashed rgba(255,255,255,0.4)",
+                                backgroundImage:
+                                  "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px)",
+                              }}
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                setCreateRange({
+                                  startIndex: slot.startIndex,
+                                  endIndex: slot.endIndex,
+                                });
+                                setLabel(slot.label || "");
+                                setIsRecurring(true);
+                                setModalData({
+                                  type: "edit",
+                                  slot: slot,
+                                  week: weekIndex,
+                                  dayIndex,
+                                });
+                                setShowModal(true);
+                              }}
+                            >
+                              <span
+                                style={{
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {slot.label}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
                   );
                 })}

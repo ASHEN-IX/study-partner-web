@@ -89,7 +89,11 @@
 }
 
 .character-card:hover {
-  border-color: color-mix(in srgb, var(--accent-color-dynamic) 65%, transparent);
+  border-color: color-mix(
+    in srgb,
+    var(--accent-color-dynamic) 65%,
+    transparent
+  );
   box-shadow: 0 10px 30px var(--accent-color-dynamic-shadow-20);
   transform: translateY(-5px);
 }

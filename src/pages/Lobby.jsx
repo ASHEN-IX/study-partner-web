@@ -94,7 +94,9 @@ const resolveAssetUrl = (value) => {
 const resolveProfileAvatar = (profile) => {
   const avatar = profile?.avatar ? String(profile.avatar) : "";
   if (!avatar) {
-    const seed = encodeURIComponent(String(profile?.nickname || "StudyPartner"));
+    const seed = encodeURIComponent(
+      String(profile?.nickname || "StudyPartner"),
+    );
     return `https://api.dicebear.com/7.x/thumbs/svg?seed=${seed}`;
   }
   return resolveAssetUrl(avatar);
@@ -160,7 +162,8 @@ const Lobby = () => {
           if (activeCharacterId) {
             const activeCharacter = ownedList.find(
               (character) =>
-                String(character?._id || "") === String(activeCharacterId || ""),
+                String(character?._id || "") ===
+                String(activeCharacterId || ""),
             );
             if (activeCharacter) {
               setUserCharacter(activeCharacter);
@@ -188,7 +191,10 @@ const Lobby = () => {
 
         if (gamificationResult.status === "fulfilled") {
           const gamificationPayload = gamificationResult.value || {};
-          const stats = gamificationPayload?.stats || gamificationPayload?.data?.stats || {};
+          const stats =
+            gamificationPayload?.stats ||
+            gamificationPayload?.data?.stats ||
+            {};
 
           setSignals((prev) => ({
             ...prev,
@@ -211,15 +217,19 @@ const Lobby = () => {
 
         if (rankResult.status === "fulfilled") {
           const payload = rankResult.value || {};
-          const profileData = payload?.profile || payload?.data?.profile || null;
-          const progressData = payload?.progress || payload?.data?.progress || null;
+          const profileData =
+            payload?.profile || payload?.data?.profile || null;
+          const progressData =
+            payload?.progress || payload?.data?.progress || null;
 
           setRankProfile(profileData);
           setRankProgress(progressData);
           setSignals((prev) => ({
             ...prev,
             streak: toSafeCount(
-              profileData?.currentStreak ?? payload?.currentStreak ?? prev.streak,
+              profileData?.currentStreak ??
+                payload?.currentStreak ??
+                prev.streak,
               prev.streak,
             ),
           }));
@@ -235,7 +245,8 @@ const Lobby = () => {
   const selectedCharacter = useMemo(() => {
     if (!ownedCharacters.length) return userCharacter;
     const match = ownedCharacters.find(
-      (character) => String(character?._id || "") === String(selectedCharacterId || ""),
+      (character) =>
+        String(character?._id || "") === String(selectedCharacterId || ""),
     );
     return match || userCharacter || ownedCharacters[0] || null;
   }, [ownedCharacters, selectedCharacterId, userCharacter]);
@@ -329,7 +340,9 @@ const Lobby = () => {
             MATCH FOUND
           </h1>
           <p className="mt-3 text-cyan-300 tracking-[0.28em] text-xs sm:text-sm font-bold">
-            {countdown > 0 ? `SESSION STARTS IN ${countdown}` : "SESSION STARTED"}
+            {countdown > 0
+              ? `SESSION STARTS IN ${countdown}`
+              : "SESSION STARTED"}
           </p>
         </motion.div>
 
@@ -351,7 +364,9 @@ const Lobby = () => {
               </span>
               <div className="flex items-center gap-2 text-cyan-200/90">
                 <SelectedModeIcon size={16} />
-                <span className="text-xs font-bold tracking-wide">{selectedMode.name}</span>
+                <span className="text-xs font-bold tracking-wide">
+                  {selectedMode.name}
+                </span>
               </div>
             </div>
 
@@ -393,7 +408,9 @@ const Lobby = () => {
             <Swords className="w-5 h-5 text-cyan-200" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-wide">SESSION LOBBY</h1>
+            <h1 className="text-xl sm:text-2xl font-black tracking-wide">
+              SESSION LOBBY
+            </h1>
             <p className="text-xs text-slate-300 uppercase tracking-[0.2em]">
               Configure mode, character, and launch
             </p>
@@ -439,10 +456,14 @@ const Lobby = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
                       <div className="relative p-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-black tracking-wide">{mode.name}</p>
+                          <p className="text-sm font-black tracking-wide">
+                            {mode.name}
+                          </p>
                           <Icon size={16} className="text-cyan-200" />
                         </div>
-                        <p className="mt-1 text-[11px] text-slate-300">{mode.role}</p>
+                        <p className="mt-1 text-[11px] text-slate-300">
+                          {mode.role}
+                        </p>
                       </div>
                     </motion.button>
                   );
@@ -466,7 +487,9 @@ const Lobby = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-transparent" />
                     <div className="relative p-5 sm:p-6 max-w-md">
-                      <h3 className="text-3xl font-black leading-tight">{selectedMode.name}</h3>
+                      <h3 className="text-3xl font-black leading-tight">
+                        {selectedMode.name}
+                      </h3>
                       <p className="mt-3 text-slate-200 text-sm sm:text-base">
                         {selectedMode.description}
                       </p>
@@ -493,7 +516,9 @@ const Lobby = () => {
                           </div>
                           <div>
                             <p className="text-sm font-semibold">{ability}</p>
-                            <p className="text-[11px] text-slate-300">Ready for this session</p>
+                            <p className="text-[11px] text-slate-300">
+                              Ready for this session
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -506,9 +531,12 @@ const Lobby = () => {
             <div className="rounded-2xl border border-white/10 bg-slate-900/55 backdrop-blur-xl p-4 sm:p-5">
               <div className="flex items-end justify-between gap-3 mb-4">
                 <div>
-                  <h3 className="text-base font-black tracking-wide">OWNED CHARACTERS</h3>
+                  <h3 className="text-base font-black tracking-wide">
+                    OWNED CHARACTERS
+                  </h3>
                   <p className="text-xs text-slate-300">
-                    Pick your loadout for this run. Lobby choice remains reversible.
+                    Pick your loadout for this run. Lobby choice remains
+                    reversible.
                   </p>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-md border border-white/20 bg-white/5">
@@ -541,13 +569,15 @@ const Lobby = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {ownedCharacters.map((character) => {
                     const active =
-                      String(character?._id || "") === String(selectedCharacterId || "");
+                      String(character?._id || "") ===
+                      String(selectedCharacterId || "");
                     const rarityClass =
                       RARITY_CLASSES[character.rarity] || RARITY_CLASSES.common;
                     const abilityName = character?.primary_ability_id?.name
                       ? String(character.primary_ability_id.name)
                       : "Adaptive Boost";
-                    const abilityDescription = character?.primary_ability_id?.description
+                    const abilityDescription = character?.primary_ability_id
+                      ?.description
                       ? String(character.primary_ability_id.description)
                       : "Enhances your performance in focused study loops.";
                     const imageUrl =
@@ -560,7 +590,9 @@ const Lobby = () => {
                         whileHover={{ y: -2 }}
                         whileTap={{ scale: 0.99 }}
                         disabled={lockedIn || isUpdatingCharacter}
-                        onClick={() => setSelectedCharacterId(String(character._id || ""))}
+                        onClick={() =>
+                          setSelectedCharacterId(String(character._id || ""))
+                        }
                         className={`rounded-2xl border overflow-hidden text-left transition-all ${
                           active
                             ? "border-cyan-300/55 shadow-[0_14px_32px_rgba(34,211,238,0.24)]"
@@ -573,7 +605,9 @@ const Lobby = () => {
                         />
                         <div className="p-3.5 bg-gradient-to-b from-slate-900/90 to-slate-900">
                           <div className="flex items-center justify-between gap-2">
-                            <h4 className="font-black text-base truncate">{character.name}</h4>
+                            <h4 className="font-black text-base truncate">
+                              {character.name}
+                            </h4>
                             {active ? (
                               <CheckCircle2 className="w-4 h-4 text-cyan-200 shrink-0" />
                             ) : null}
@@ -594,7 +628,9 @@ const Lobby = () => {
                             <p className="text-[10px] uppercase tracking-[0.16em] text-cyan-200 mb-1">
                               Ability
                             </p>
-                            <p className="text-sm font-semibold text-cyan-50">{abilityName}</p>
+                            <p className="text-sm font-semibold text-cyan-50">
+                              {abilityName}
+                            </p>
                             <p className="text-[11px] text-cyan-100/80 mt-1 line-clamp-2">
                               {abilityDescription}
                             </p>
@@ -611,12 +647,16 @@ const Lobby = () => {
           <aside className="xl:col-span-5 space-y-5">
             <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-4 sm:p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base font-black tracking-wide">GAMIFICATION</h3>
+                <h3 className="text-base font-black tracking-wide">
+                  GAMIFICATION
+                </h3>
                 <Trophy className="w-5 h-5 text-amber-300" />
               </div>
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-widest text-slate-300">Rank Progress</p>
+                <p className="text-xs uppercase tracking-widest text-slate-300">
+                  Rank Progress
+                </p>
                 <div className="mt-2 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm text-slate-300">Current</p>
@@ -624,7 +664,9 @@ const Lobby = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-slate-300">Next</p>
-                    <p className="text-base font-bold text-cyan-200">{nextRankName}</p>
+                    <p className="text-base font-bold text-cyan-200">
+                      {nextRankName}
+                    </p>
                   </div>
                 </div>
 
@@ -651,12 +693,16 @@ const Lobby = () => {
                 <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
                   <Flame className="w-4 h-4 text-orange-300 mx-auto mb-1" />
                   <p className="text-lg font-black">{signals.streak}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-300">Streak</p>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-300">
+                    Streak
+                  </p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
                   <Sparkles className="w-4 h-4 text-cyan-300 mx-auto mb-1" />
                   <p className="text-lg font-black">{signals.tasks}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-300">Tasks</p>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-300">
+                    Tasks
+                  </p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
                   <Users className="w-4 h-4 text-emerald-300 mx-auto mb-1" />
@@ -681,7 +727,8 @@ const Lobby = () => {
                     {selectedCharacter?.name || "No character selected"}
                   </p>
                   <p className="text-xs text-slate-300 truncate">
-                    {selectedCharacter?.primary_ability_id?.name || "Adaptive Boost"}
+                    {selectedCharacter?.primary_ability_id?.name ||
+                      "Adaptive Boost"}
                   </p>
                 </div>
               </div>
