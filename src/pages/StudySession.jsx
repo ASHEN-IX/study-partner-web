@@ -12,6 +12,7 @@ import {
   Play,
   Target,
   RotateCcw,
+  Brain,
 } from "lucide-react";
 import {
   aiAPI,
@@ -21,6 +22,7 @@ import {
   gamificationAPI,
   teamSessionsAPI,
   characterAPI,
+  profileAPI,
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import useSessionStore from "../store/sessionStore";
@@ -30,6 +32,7 @@ import TeamSessionPanel from "../components/TeamSessionPanel";
 import VoiceButton from "../components/VoiceChat/VoiceButton";
 import AbilityNotification from "../components/Characters/Gamification/AbilityNotification";
 import AbilityActiveIndicator from "../components/Characters/Gamification/AbilityActiveIndicator";
+import SocraticEvaluation from "../components/SocraticEvaluation";
 import "./StudySession.css";
 
 // ─── Task Progress Bar ───────────────────────────────────────────────
@@ -340,6 +343,10 @@ const StudySession = () => {
     multiplier: 1,
   });
 
+  // Socratic evaluation state
+  const [showSocratic, setShowSocratic] = useState(false);
+  const [socraticTask, setSocraticTask] = useState(null);
+
   // Timers
   const sessionTimerRef = useRef(null);
   const signalPollingRef = useRef(null);
@@ -395,6 +402,19 @@ const StudySession = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasTaskProgression]);
+
+  const handleTaskComplete = async () => {
+    await completeTask();
+    const current = taskProgress?.tasks?.[taskProgress?.currentTaskIndex || 0];
+    if (current) {
+      setSocraticTask({
+        title: current.title,
+        description: current.description || current.title,
+        details: current.description || current.title,
+      });
+      setShowSocratic(true);
+    }
+  };
 
   const autoStartSession = async () => {
     setSessionActive(true);
@@ -567,6 +587,14 @@ const StudySession = () => {
       console.error("[StudySession] Failed to start focus tracking:", err);
     }
 
+    // Reset fatigue detector state for new session
+    try {
+      await aiAPI.resetFatigue(user._id);
+      console.log("[StudySession] Reset fatigue detector for new session");
+    } catch (err) {
+      console.error("[StudySession] Failed to reset fatigue detector:", err);
+    }
+
     // Start session timer
     sessionTimerRef.current = setInterval(() => {
       setSessionDuration((prev) => prev + 1);
@@ -709,12 +737,16 @@ const StudySession = () => {
       });
 
       const evaluation = evalRes?.data?.evaluation;
-      if (evaluation?.level === "excellent") {
+      // New API returns: state (mastery_confirmed/failed), mastery_score (0-1), feedback
+      const isExcellent = evaluation?.state === "mastery_confirmed" && evaluation?.mastery_score >= 0.85;
+      const scorePercent = evaluation?.mastery_score ? Math.round(evaluation.mastery_score * 100) : 0;
+      
+      if (isExcellent) {
         await notificationAPI.create({
           userId: user._id,
           type: "achievement",
           title: "Excellent Study Session",
-          message: `Session score ${evaluation.score}/100. Keep this rhythm going!`,
+          message: `Session score ${scorePercent}/100. Keep this rhythm going!`,
           metadata: {
             actionUrl: "/analytics",
           },
@@ -723,6 +755,17 @@ const StudySession = () => {
       }
     } catch (err) {
       console.error("[StudySession] Session evaluation failed:", err);
+    }
+
+    // Update profile stats with session data
+    try {
+      await profileAPI.updateStats({
+        studyTime: Math.floor(sessionDuration / 60),
+        tasksCompleted: taskProgress?.completedTasks || 0,
+      });
+      console.log("[StudySession] Profile stats updated");
+    } catch (err) {
+      console.error("[StudySession] Failed to update stats:", err);
     }
 
     // Award XP for perfect focus session (score > 80)
@@ -1049,7 +1092,7 @@ const StudySession = () => {
 
                     <div className="flex gap-3 mt-6 pt-4 border-t border-[#ffffff10]">
                       <button
-                        onClick={completeTask}
+                        onClick={handleTaskComplete}
                         disabled={taskLoading || !canAdvanceTask}
                         className="flex-1 px-6 py-3 bg-[var(--accent-color-dynamic)] text-white font-bold tracking-wider uppercase rounded-lg hover:bg-[var(--accent-color-dynamic)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
@@ -1172,6 +1215,23 @@ const StudySession = () => {
                       ))}
                     </div>
                   </div>
+
+                  {showSocratic && socraticTask && (
+                    <SocraticEvaluation
+                      taskTitle={socraticTask.title}
+                      taskDescription={socraticTask.description}
+                      taskDetails={socraticTask.details}
+                      maxAttempts={3}
+                      onComplete={() => {
+                        setShowSocratic(false);
+                        setSocraticTask(null);
+                      }}
+                      onClose={() => {
+                        setShowSocratic(false);
+                        setSocraticTask(null);
+                      }}
+                    />
+                  )}
 
                   {sessionActive && (
                     <ChatWindow
@@ -1462,6 +1522,25 @@ const StudySession = () => {
         </div>
       )}
 
+      {sessionActive && showSocratic && (
+        <div style={{ marginTop: "16px" }}>
+          <SocraticEvaluation
+            taskTitle="Current Study Topic"
+            taskDescription="Review your understanding of the material"
+            taskDetails="General session knowledge check"
+            maxAttempts={3}
+            onComplete={() => {
+              setShowSocratic(false);
+              setSocraticTask(null);
+            }}
+            onClose={() => {
+              setShowSocratic(false);
+              setSocraticTask(null);
+            }}
+          />
+        </div>
+      )}
+
       {sessionActive && (
         <div style={{ marginTop: "16px" }}>
           <ChatWindow
@@ -1511,6 +1590,25 @@ const StudySession = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Socratic Evaluation Button (original mode) */}
+      {sessionActive && !showSocratic && (
+        <div style={{ marginTop: "12px" }}>
+          <button
+            onClick={() => {
+              setSocraticTask({
+                title: "Current Study Topic",
+                description: "Review your understanding of the material",
+                details: "General session knowledge check",
+              });
+              setShowSocratic(true);
+            }}
+            className="w-full px-4 py-2 bg-[#1a2633] border border-[#ffffff10] text-gray-300 text-xs font-bold tracking-wider uppercase rounded-lg hover:bg-[#ffffff10] transition-all flex items-center justify-center gap-2"
+          >
+            <Brain size={14} /> Socratic Evaluation
+          </button>
         </div>
       )}
 

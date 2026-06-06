@@ -173,7 +173,6 @@ const Profile = () => {
           <div className="relative bg-card/80 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-2xl overflow-hidden">
             {/* Decorative Border Line */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-transparent to-transparent opacity-80" />
-            gamification?.level
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
               {/* Avatar Section */}
               <div className="relative group">

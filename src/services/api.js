@@ -179,6 +179,9 @@ export const profileAPI = {
     api.get("/api/v1/users/profile/online-status/batch", {
       params: { userIds: userIds.join(",") },
     }),
+  getStats: () => api.get("/api/v1/users/profile/stats"),
+  updateStats: (data) =>
+    api.patch("/api/v1/users/profile/stats", data).then((res) => res.data),
 };
 
 // Subject & Course Management (through main backend)
@@ -245,6 +248,14 @@ export const aiAPI = {
     }),
   getLatestSignals: (userId, limit = 10) =>
     api.get(`/api/v1/ai/signals/latest/${userId}`, { params: { limit } }),
+  resetFatigue: (userId) =>
+    api.post("/api/v1/ai/signals/fatigue/reset", { user_id: userId }),
+
+  // Socratic Evaluation
+  socraticStart: (data) =>
+    api.post("/api/v1/ai/evaluator/socratic/start", data),
+  socraticAnswer: (data) =>
+    api.post("/api/v1/ai/evaluator/socratic/answer", data),
 
   // AI Search
   search: (data = {}) => {

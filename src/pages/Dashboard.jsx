@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { profileAPI, tasksAPI } from "../services/api";
 import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
 import QuestPanel from "../components/QuestPanel";
 
 const Dashboard = () => {

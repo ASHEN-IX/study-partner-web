@@ -102,11 +102,9 @@ const NotificationItem = ({ notification }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case "urgent":
-        return "border-l-[var(--accent-color-dynamic)] bg-[var(--accent-color-dynamic)]/10 dark:bg-[var(--accent-color-dynamic)]/20";
       case "high":
-        return "border-l-orange-500 bg-[var(--accent-color-dynamic)] dark:bg-[var(--accent-color-dynamic)]/20";
       case "normal":
-        return "border-l-blue-500 bg-[var(--accent-color-dynamic)] dark:bg-[var(--accent-color-dynamic)]/20";
+        return "border-l-[var(--accent-color-dynamic)] bg-[var(--accent-color-dynamic)]/10 dark:bg-[var(--accent-color-dynamic)]/20";
       default:
         return "border-l-gray-500 bg-gray-50 dark:bg-gray-900/20";
     }

@@ -16,11 +16,11 @@ const LevelUpModal = ({ visible, newLevel, totalXP, onClose }) => {
                 left: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 2}s`,
                 backgroundColor: [
-                  "var(--accent-color-dynamic)",
-                  "var(--accent-color-dynamic)",
-                  "var(--accent-color-dynamic)",
-                  "var(--accent-color-dynamic)",
-                  "var(--accent-color-dynamic)",
+                  "#ff6b6b",
+                  "#ffd93d",
+                  "#6bcb77",
+                  "#4d96ff",
+                  "#ff6b9d",
                 ][Math.floor(Math.random() * 5)],
               }}
             />
