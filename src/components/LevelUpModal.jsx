@@ -1,5 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import "./LevelUpModal.css";
+
+const CONFETTI_COLORS = ["#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#ff6b9d"];
+
+// Pre-generate stable confetti data so colors/positions don't re-randomize on each render
+const CONFETTI_DATA = Array.from({ length: 30 }, (_, i) => ({
+  left: ((i * 37 + 13) % 100),
+  delay: ((i * 67 + 7) % 200) / 100,
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+}));
 
 const LevelUpModal = ({ visible, newLevel, totalXP, onClose }) => {
   if (!visible) return null;
@@ -8,20 +17,14 @@ const LevelUpModal = ({ visible, newLevel, totalXP, onClose }) => {
     <div className="levelup-overlay" onClick={onClose}>
       <div className="levelup-modal" onClick={(e) => e.stopPropagation()}>
         <div className="levelup-confetti">
-          {[...Array(30)].map((_, i) => (
+          {CONFETTI_DATA.map((piece, i) => (
             <div
               key={i}
               className="confetti-piece"
               style={{
-                left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-                backgroundColor: [
-                  "#ff6b6b",
-                  "#ffd93d",
-                  "#6bcb77",
-                  "#4d96ff",
-                  "#ff6b9d",
-                ][Math.floor(Math.random() * 5)],
+                left: `${piece.left}%`,
+                animationDelay: `${piece.delay}s`,
+                backgroundColor: piece.color,
               }}
             />
           ))}

@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { profileAPI, tasksAPI } from "../services/api";
 import { useAuthStore } from "../store/authStore";
-import { useAuthStore } from "../store/authStore";
 import QuestPanel from "../components/QuestPanel";
 
 const Dashboard = () => {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [stats, setStats] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [showPendingTasks, setShowPendingTasks] = useState(false);
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [profileRes, tasksRes] = await Promise.all([
+      const [profileRes, tasksRes, statsRes] = await Promise.all([
         profileAPI.get().catch((err) => {
           if (err.response?.status === 404) {
             return { data: { profile: null } };
@@ -34,6 +34,7 @@ const Dashboard = () => {
           }
           throw err;
         }),
+        profileAPI.getStats().catch(() => ({ data: {} })),
       ]);
 
       const pendingTasks = (tasksRes.data.tasks || []).filter(
@@ -41,6 +42,7 @@ const Dashboard = () => {
       );
 
       setProfile(profileRes.data.profile);
+      setStats(statsRes.data?.stats || statsRes.data || {});
       setTasks(pendingTasks);
       setError("");
     } catch (err) {
@@ -95,19 +97,19 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
               title="STUDY TIME"
-              value={`${Math.floor((profile?.stats?.totalStudyTime || 0) / 60)}H`}
-              subtitle={`${(profile?.stats?.totalStudyTime || 0) % 60}M`}
+              value={`${Math.floor((stats?.totalStudyTime || 0) / 60)}H`}
+              subtitle={`${(stats?.totalStudyTime || 0) % 60}M`}
               icon="⏱"
             />
             <StatCard
               title="TASKS DONE"
-              value={profile?.stats?.completedTasks || 0}
+              value={stats?.completedTasks || 0}
               subtitle="COMPLETED"
               icon="✓"
             />
             <StatCard
               title="STREAK"
-              value={`${profile?.stats?.currentStreak || 0}`}
+              value={`${stats?.currentStreak || 0}`}
               subtitle="DAYS"
               icon="🔥"
             />

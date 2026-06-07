@@ -23,9 +23,12 @@ import {
   teamSessionsAPI,
   characterAPI,
   profileAPI,
+  reviewAPI,
+  analyticsAPI,
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import useSessionStore from "../store/sessionStore";
+import useGamificationStore from "../store/gamificationStore";
 import WebcamCapture from "../components/WebcamCapture";
 import ChatWindow from "../components/SessionChat/ChatWindow";
 import TeamSessionPanel from "../components/TeamSessionPanel";
@@ -34,6 +37,10 @@ import AbilityNotification from "../components/Characters/Gamification/AbilityNo
 import AbilityActiveIndicator from "../components/Characters/Gamification/AbilityActiveIndicator";
 import SocraticEvaluation from "../components/SocraticEvaluation";
 import "./StudySession.css";
+
+const BYPASS_TASK_TIMING_GATE =
+  String(import.meta.env.VITE_BYPASS_TASK_TIMING_GATE || "").toLowerCase() ===
+  "true";
 
 // ─── Task Progress Bar ───────────────────────────────────────────────
 const TaskProgressBar = ({ taskProgress }) => {
@@ -298,6 +305,7 @@ export const SessionSummary = ({ summary, onRestart, onGoHome }) => {
 const StudySession = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const fetchLevelInfo = useGamificationStore((state) => state.fetchLevelInfo);
   const {
     step,
     activeSession,
@@ -404,15 +412,44 @@ const StudySession = () => {
   }, [hasTaskProgression]);
 
   const handleTaskComplete = async () => {
-    await completeTask();
-    const current = taskProgress?.tasks?.[taskProgress?.currentTaskIndex || 0];
-    if (current) {
+    try {
+      await completeTask();
+    } catch (err) {
+      console.error("[StudySession] completeTask failed:", err);
+      return;
+    }
+
+    try {
+      await Promise.all([
+        fetchLevelInfo(),
+        gamificationAPI.getProfile(),
+        gamificationAPI.getRankProfile(),
+      ]);
+    } catch (err) {
+      console.error("[StudySession] Failed to refresh gamification data:", err);
+    }
+
+    const completedIdx = taskProgress?.currentTaskIndex || 0;
+    const completed = taskProgress?.tasks?.[completedIdx];
+    if (completed) {
       setSocraticTask({
-        title: current.title,
-        description: current.description || current.title,
-        details: current.description || current.title,
+        title: completed.title,
+        description: completed.description || completed.title,
+        details: completed.description || completed.title,
       });
       setShowSocratic(true);
+      // Schedule spaced repetition review for the completed task
+      try {
+        await reviewAPI.scheduleReview({
+          user_id: user._id,
+          task_id: completed.taskId || completed._id || completed.id || "mock-task-id",
+          task_title: completed.title,
+          task_description: completed.description || completed.title,
+          task_details: completed.description || completed.title,
+        });
+      } catch (err) {
+        console.error("[StudySession] Failed to schedule review:", err);
+      }
     }
   };
 
@@ -593,6 +630,13 @@ const StudySession = () => {
       console.log("[StudySession] Reset fatigue detector for new session");
     } catch (err) {
       console.error("[StudySession] Failed to reset fatigue detector:", err);
+    }
+
+    // Track session start event
+    try {
+      await analyticsAPI.trackEvent({ eventType: "study_session_started" });
+    } catch (err) {
+      console.error("[StudySession] Failed to track session start:", err);
     }
 
     // Start session timer
@@ -958,15 +1002,20 @@ const StudySession = () => {
     const elapsedTaskSeconds = taskStartedAtMs
       ? Math.max(0, Math.floor((Date.now() - taskStartedAtMs) / 1000))
       : 0;
-    const canAdvanceTask = elapsedTaskSeconds >= minRequiredSeconds;
+    const canAdvanceTask =
+      BYPASS_TASK_TIMING_GATE || elapsedTaskSeconds >= minRequiredSeconds;
     const remainingAdvanceSeconds = Math.max(
       0,
       minRequiredSeconds - elapsedTaskSeconds,
     );
-    const advanceProgressPct = Math.min(
-      100,
-      Math.round((elapsedTaskSeconds / Math.max(minRequiredSeconds, 1)) * 100),
-    );
+    const advanceProgressPct = BYPASS_TASK_TIMING_GATE
+      ? 100
+      : Math.min(
+          100,
+          Math.round(
+            (elapsedTaskSeconds / Math.max(minRequiredSeconds, 1)) * 100,
+          ),
+        );
 
     return (
       <div className="min-h-screen bg-[#0f1923] text-white relative">
@@ -1084,9 +1133,11 @@ const StudySession = () => {
                         />
                       </div>
                       <p className="text-xs text-gray-400">
-                        {canAdvanceTask
-                          ? "You can now complete or skip this task."
-                          : `You can complete/skip after ${formatShortDuration(remainingAdvanceSeconds)} (80% of ${estimatedMinutes} min).`}
+                        {BYPASS_TASK_TIMING_GATE
+                          ? "Task timing gate bypassed for development."
+                          : canAdvanceTask
+                            ? "You can now complete or skip this task."
+                            : `You can complete/skip after ${formatShortDuration(remainingAdvanceSeconds)} (80% of ${estimatedMinutes} min).`}
                       </p>
                     </div>
 
@@ -1519,25 +1570,6 @@ const StudySession = () => {
               <span className="legend-color fatigue-color"></span> Fatigue
             </span>
           </div>
-        </div>
-      )}
-
-      {sessionActive && showSocratic && (
-        <div style={{ marginTop: "16px" }}>
-          <SocraticEvaluation
-            taskTitle="Current Study Topic"
-            taskDescription="Review your understanding of the material"
-            taskDetails="General session knowledge check"
-            maxAttempts={3}
-            onComplete={() => {
-              setShowSocratic(false);
-              setSocraticTask(null);
-            }}
-            onClose={() => {
-              setShowSocratic(false);
-              setSocraticTask(null);
-            }}
-          />
         </div>
       )}
 

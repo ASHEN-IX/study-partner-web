@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { Loader2, Send, CheckCircle2, XCircle, Brain, RefreshCw } from "lucide-react";
 import { aiAPI } from "../services/api";
 
@@ -11,6 +11,7 @@ export default function SocraticEvaluation({
   onComplete,
   onClose,
 }) {
+  const containerRef = useRef(null);
   const [sessionId, setSessionId] = useState(null);
   const [question, setQuestion] = useState("");
   const [userAnswer, setUserAnswer] = useState("");
@@ -19,6 +20,17 @@ export default function SocraticEvaluation({
   const [masteryScore, setMasteryScore] = useState(0);
   const [questionsAsked, setQuestionsAsked] = useState(0);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    containerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, []);
+
+  useEffect(() => {
+    if (state === "idle") {
+      startEvaluation();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const startEvaluation = useCallback(async () => {
     setState("loading");
@@ -74,7 +86,7 @@ export default function SocraticEvaluation({
 
   if (state === "idle") {
     return (
-      <div className="bg-[#1a2633] border border-[#ffffff10] rounded-xl p-4">
+      <div ref={containerRef} className="bg-[#1a2633] border border-[var(--accent-color-dynamic)] rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
           <Brain size={18} className="text-[var(--accent-color-dynamic)]" />
           <h3 className="text-xs font-bold tracking-wider text-gray-500 uppercase">
@@ -84,12 +96,10 @@ export default function SocraticEvaluation({
         <p className="text-xs text-gray-400 mb-3">
           Test your understanding with AI-driven Socratic questioning.
         </p>
-        <button
-          onClick={startEvaluation}
-          className="w-full px-4 py-2 bg-[var(--accent-color-dynamic)] text-white text-xs font-bold tracking-wider uppercase rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-        >
-          <Brain size={14} /> Start Evaluation
-        </button>
+        <div className="flex items-center justify-center gap-2 py-4">
+          <Loader2 size={20} className="animate-spin text-[var(--accent-color-dynamic)]" />
+          <span className="text-sm text-gray-400">Starting evaluation...</span>
+        </div>
       </div>
     );
   }

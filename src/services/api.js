@@ -444,6 +444,8 @@ export const analyticsAPI = {
   getStatsByType: (eventType, params) =>
     api.get(`/api/v1/analytics/stats/${eventType}`, { params }),
   getInsights: (params) => api.get("/api/v1/analytics/insights", { params }),
+  getDailyActivity: (params) =>
+    api.get("/api/v1/analytics/daily-activity", { params }),
 };
 
 // Review / Spaced Repetition API - Goes through AI Orchestrator

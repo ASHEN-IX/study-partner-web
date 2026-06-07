@@ -110,7 +110,7 @@ const useFriendsStore = create((set, get) => ({
   fetchFriendCount: async () => {
     try {
       const data = await friendsAPI.getCount();
-      set({ friendCount: data.count || 0 });
+      set({ friendCount: data.total || data.count || 0 });
     } catch (err) {
       console.error("Failed to fetch friend count:", err);
     }

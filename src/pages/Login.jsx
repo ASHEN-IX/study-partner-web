@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { authAPI } from "../services/api";
+import { authAPI, analyticsAPI } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 
 const Login = () => {
@@ -62,6 +62,9 @@ const Login = () => {
       login(user, token, refreshToken);
 
       // Redirect based on role
+      // Fire-and-forget login event for analytics (don't block navigation)
+      analyticsAPI.trackEvent({ eventType: "login" }).catch(() => {});
+
       if (user.role === "admin") {
         navigate("/admin/dashboard");
       } else {

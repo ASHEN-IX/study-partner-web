@@ -197,6 +197,7 @@ const useSessionStore = create((set, get) => ({
         error: err.response?.data?.error || "Failed to complete task",
         loading: false,
       });
+      throw err;
     }
   },
 

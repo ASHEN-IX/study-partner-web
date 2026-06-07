@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { authAPI, profileAPI } from "@/services/api";
 import {
@@ -353,14 +353,6 @@ function App() {
             element={
               <PrivateRoute requireStudent>
                 <Dashboard />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/lobby"
-            element={
-              <PrivateRoute requireStudent>
-                <Navigate to="/session-setup" replace />
               </PrivateRoute>
             }
           />

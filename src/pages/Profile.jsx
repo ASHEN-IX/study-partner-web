@@ -104,7 +104,7 @@ const Profile = () => {
   const fetchFriendCount = async () => {
     try {
       const data = await friendsAPI.getCount();
-      setFriendCount(data.count || 0);
+      setFriendCount(data.total || data.count || 0);
     } catch (error) {
       console.error("Failed to fetch friend count:", error);
     }
@@ -256,7 +256,7 @@ const Profile = () => {
                       <Zap className="w-5 h-5" />
                     </div>
                     <div className="text-xl font-bold">
-                      {profile?.stats?.currentStreak || 0}
+                      {rankProfile?.profile?.currentStreak || profile?.stats?.currentStreak || 0}
                     </div>
                     <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
                       Streak
@@ -267,7 +267,7 @@ const Profile = () => {
                       <Award className="w-5 h-5" />
                     </div>
                     <div className="text-xl font-bold">
-                      {profile?.stats?.completedTasks || 0}
+                      {gamification?.stats?.tasksCompleted || profile?.stats?.completedTasks || 0}
                     </div>
                     <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
                       Tasks

@@ -34,7 +34,7 @@ const SessionInvitePopup = () => {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [invite?._id, invite?.id]);
+  }, [invite?._id, invite?.id, dismissInvite]);
 
   const handleJoin = async () => {
     if (!invite) return;
